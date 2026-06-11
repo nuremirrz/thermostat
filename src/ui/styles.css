@@ -1,0 +1,239 @@
+:root {
+  --accent: #2f6df6;
+  --ok: #25a55a;
+  --bg-card: rgba(255, 255, 255, 0.92);
+  font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #d9d6cf;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+}
+
+canvas {
+  display: block;
+}
+
+/* ---- instruction banner -------------------------------------------------- */
+.banner {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-card);
+  color: #20242c;
+  padding: 12px 22px;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  max-width: 90vw;
+  backdrop-filter: blur(6px);
+  transition: opacity 0.3s;
+}
+
+/* ---- wire checklist ------------------------------------------------------ */
+.checklist {
+  position: fixed;
+  top: 80px;
+  right: 18px;
+  background: var(--bg-card);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  padding: 14px 16px;
+  min-width: 188px;
+  backdrop-filter: blur(6px);
+}
+
+.checklist h3 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6b7280;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 14px;
+  color: #2a2f38;
+}
+
+.row.done {
+  color: #1f8a4c;
+}
+
+.row.active {
+  font-weight: 700;
+}
+
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  flex: 0 0 auto;
+}
+
+.row .arrow {
+  color: #9aa1ab;
+  margin: 0 2px;
+}
+
+.row .state {
+  margin-left: auto;
+  font-size: 13px;
+}
+
+/* ---- return-to-wall button ---------------------------------------------- */
+.return-btn {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-card);
+  color: #20242c;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(6px);
+  transition: filter 0.15s, transform 0.15s;
+}
+
+.return-btn:hover {
+  filter: brightness(0.97);
+  transform: translateX(-50%) translateY(-1px);
+}
+
+/* ---- toast --------------------------------------------------------------- */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #2a2f38;
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.toast.bad {
+  background: #b23b34;
+}
+
+/* ---- completion overlay -------------------------------------------------- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(20, 22, 28, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s;
+}
+
+.overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 30px 34px;
+  width: 360px;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  transform: scale(0.9);
+  transition: transform 0.4s cubic-bezier(0.2, 1.2, 0.3, 1);
+}
+
+.overlay.show .card {
+  transform: scale(1);
+}
+
+.card .emoji {
+  font-size: 44px;
+}
+
+.card h2 {
+  margin: 8px 0 2px;
+  color: var(--ok);
+  font-size: 24px;
+}
+
+.card .sub {
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.card .stats {
+  background: #f4f5f7;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #333;
+}
+
+.card button {
+  margin-top: 18px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 12px 22px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.card button:hover {
+  filter: brightness(1.05);
+}
+
+/* loader */
+.loader {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #d9d6cf;
+  color: #555;
+  font-size: 16px;
+  z-index: 50;
+}
