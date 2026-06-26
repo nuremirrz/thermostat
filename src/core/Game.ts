@@ -291,6 +291,14 @@ export class Game {
     this.hud.setReturnVisible(false);
     this.hud.setBanner("Все провода подключены — питание подаётся ✅");
     setTimeout(() => this.hud.showComplete(), 600);
+
+    // Сообщаем родительскому окну (платформе), что уровень пройден.
+    if (window.parent !== window) {
+      window.parent.postMessage(
+        { source: "hvac-sim", type: "level-complete", slug: "thermostat" },
+        "*"
+      );
+    }
   }
 
   private reset(): void {
