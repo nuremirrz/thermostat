@@ -7,8 +7,16 @@ import { Wire } from "../objects/Wire.ts";
 import { WIRES, terminalById } from "./layout.ts";
 import { Easings, TweenManager } from "./Tween.ts";
 import { Hud } from "../ui/Hud.ts";
+import { t, onChange } from "./i18n.ts";
 
 type Phase = "closed" | "opening" | "closing" | "wiring" | "complete";
+
+/**
+ * Descriptor of the currently shown banner. Stored (rather than a raw string)
+ * so the banner can be re-rendered in the active language on a live switch.
+ * `wireId`/`label` are only used by the "banner.selectedWire" template.
+ */
+type BannerDesc = { key: string; wireId?: string; label?: string };
 
 export class Game {
   private renderer: THREE.WebGLRenderer;
@@ -30,6 +38,7 @@ export class Game {
   private selected: Wire | null = null;
   private connectedCount = 0;
   private toggling = false;
+  private currentBanner: BannerDesc | null = null;
 
   constructor(container: HTMLElement) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -68,6 +77,34 @@ export class Game {
 
     this.buildScene();
     this.bindEvents();
+
+    // Live language switch: re-render static HUD text + the current banner.
+    onChange(() => this.applyLanguage());
+    this.setBanner({ key: "banner.takeOff" });
+  }
+
+  // ---- localization ------------------------------------------------------
+
+  /** Store the current banner and render it in the active language. */
+  private setBanner(desc: BannerDesc): void {
+    this.currentBanner = desc;
+    this.hud.setBanner(this.renderBanner(desc));
+  }
+
+  private renderBanner(desc: BannerDesc): string {
+    if (desc.key === "banner.selectedWire") {
+      return t(desc.key, {
+        name: t("wires." + desc.wireId),
+        label: desc.label ?? "",
+      });
+    }
+    return t(desc.key);
+  }
+
+  /** Re-render everything text-related after a locale change (DOM only). */
+  private applyLanguage(): void {
+    this.hud.retranslate();
+    if (this.currentBanner) this.hud.setBanner(this.renderBanner(this.currentBanner));
   }
 
   // ---- setup -------------------------------------------------------------
@@ -194,7 +231,7 @@ export class Game {
     this.selectWire(null);
     this.panel.highlightTerminal(null);
     this.hud.setReturnVisible(false);
-    this.hud.setBanner(open ? "Снимаем термостат…" : "Возвращаем термостат…");
+    this.setBanner({ key: open ? "banner.removing" : "banner.returning" });
     this.controls.enabled = false;
 
     const camFrom = this.camera.position.clone();
@@ -226,13 +263,11 @@ export class Game {
             this.phase = this.connectedCount === WIRES.length ? "complete" : "wiring";
             this.hud.showChecklist();
             this.hud.setReturnVisible(true);
-            this.hud.setBanner(
-              "Выберите провод и кликните по клемме — либо верните термостат на стену"
-            );
+            this.setBanner({ key: "banner.wiringOpenHint" });
           } else {
             this.phase = "closed";
             this.hud.hideChecklist();
-            this.hud.setBanner("Кликните по термостату, чтобы снова снять его со стены");
+            this.setBanner({ key: "banner.takeOffAgain" });
           }
         },
       }
@@ -246,25 +281,30 @@ export class Game {
       wire.setSelected(true);
       this.panel.highlightTerminal(wire.def.targetTerminalId);
       this.hud.setActiveWire(wire.def.id);
-      this.hud.setBanner(
-        `Провод «${wire.def.name}» — подключите к клемме «${wire.def.targetLabel}»`
-      );
+      this.setBanner({
+        key: "banner.selectedWire",
+        wireId: wire.def.id,
+        label: wire.def.targetLabel,
+      });
     } else {
       this.panel.highlightTerminal(null);
       this.hud.setActiveWire(null);
-      this.hud.setBanner("Выберите провод, затем кликните по нужной клемме");
+      this.setBanner({ key: "banner.selectWire" });
     }
   }
 
   private tryConnect(terminalId: string): void {
     if (!this.selected) {
-      this.hud.flash("Сначала выберите провод");
+      this.hud.flash(t("toast.selectFirst"));
       return;
     }
     const wire = this.selected;
     if (wire.def.targetTerminalId !== terminalId) {
       const term = terminalById(terminalId);
-      this.hud.flash(`Клемма «${term.label}» — не та. Нужна «${wire.def.targetLabel}»`, true);
+      this.hud.flash(
+        t("toast.wrongTerminal", { got: term.label, need: wire.def.targetLabel }),
+        true
+      );
       return;
     }
 
@@ -279,7 +319,12 @@ export class Game {
         onComplete: () => {
           this.connectedCount++;
           this.hud.markConnected(wire.def.id);
-          this.hud.flash(`✓ ${wire.def.name} → ${wire.def.targetLabel}`);
+          this.hud.flash(
+            t("toast.connected", {
+              name: t("wires." + wire.def.id),
+              label: wire.def.targetLabel,
+            })
+          );
           if (this.connectedCount === WIRES.length) this.finish();
         },
       }
@@ -289,7 +334,7 @@ export class Game {
   private finish(): void {
     this.phase = "complete";
     this.hud.setReturnVisible(false);
-    this.hud.setBanner("Все провода подключены — питание подаётся ✅");
+    this.setBanner({ key: "banner.allConnected" });
     setTimeout(() => this.hud.showComplete(), 600);
 
     // Сообщаем родительскому окну (платформе), что уровень пройден.
@@ -315,6 +360,7 @@ export class Game {
     this.controls.target.set(0, 0, 0);
     this.controls.enabled = true;
     this.hud.reset();
+    this.setBanner({ key: "banner.takeOff" });
   }
 
   // ---- loop --------------------------------------------------------------

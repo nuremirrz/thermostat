@@ -80,7 +80,6 @@ export function terminalPosition(t: TerminalDef): THREE.Vector3 {
 /** A wire definition: colour + the terminal it must reach. */
 export interface WireDef {
   id: string;
-  name: string; // human label (RU)
   colorHex: number;
   /** id of the correct target terminal */
   targetTerminalId: string;
@@ -88,12 +87,12 @@ export interface WireDef {
   /** where the wire emerges from the wall (local space) */
   rootOffset: THREE.Vector3;
 }
+// The human-readable wire name is localized: resolve via t("wires." + id).
 
 // Targets:  Green→G (L4), Yellow→Y (L2), White→W (R4), Red→R (R6)
 export const WIRES: WireDef[] = [
   {
     id: "green",
-    name: "Зелёный",
     colorHex: 0x2faf3e,
     targetTerminalId: "L4",
     targetLabel: "G",
@@ -101,7 +100,6 @@ export const WIRES: WireDef[] = [
   },
   {
     id: "yellow",
-    name: "Жёлтый",
     colorHex: 0xf2c014,
     targetTerminalId: "L2",
     targetLabel: "Y",
@@ -109,7 +107,6 @@ export const WIRES: WireDef[] = [
   },
   {
     id: "white",
-    name: "Белый",
     colorHex: 0xf3f1ea,
     targetTerminalId: "R4",
     targetLabel: "W",
@@ -117,7 +114,6 @@ export const WIRES: WireDef[] = [
   },
   {
     id: "red",
-    name: "Красный",
     colorHex: 0xd23b32,
     targetTerminalId: "R6",
     targetLabel: "R",
